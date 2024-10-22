@@ -131,5 +131,81 @@ public class EmpleadoDAO {
     private Connection obtenerConexion() throws SQLException{
     	return Conexion.getConnection();
     }
+    
+    //Método para filtrar empleados
+    
+    public List<Empleado> filtrarEmpleados(String dni, String nombre, String sexo, String categoria, Integer anyos) throws SQLException, DatosNoCorrectosException {
+        List<Empleado> empleados = new ArrayList<>();
+        String sql = "SELECT * FROM empleados WHERE 1=1";
+
+        if (dni != null && !dni.isEmpty()) {
+            sql += " AND dni = ?";
+        }
+        if (nombre != null && !nombre.isEmpty()) {
+            sql += " AND nombre LIKE ?";
+        }
+        if (sexo != null && !sexo.isEmpty()) {
+            sql += " AND sexo = ?";
+        }
+        if (categoria != null && !categoria.isEmpty()) {
+            sql += " AND categoria = ?";
+        }
+        if (anyos != null) {
+            sql += " AND anyos = ?";
+        }
+
+        System.out.println("Consulta SQL: " + sql); // Debugging
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            connection = Conexion.getConnection();
+            ps = connection.prepareStatement(sql);
+            int index = 1;
+
+            if (dni != null && !dni.isEmpty()) {
+                ps.setString(index++, dni);
+            }
+            if (nombre != null && !nombre.isEmpty()) {
+                ps.setString(index++, "%" + nombre + "%");
+            }
+            if (sexo != null && !sexo.isEmpty()) {
+                ps.setString(index++, sexo);
+            }
+            if (categoria != null && !categoria.isEmpty()) {
+                ps.setString(index++, categoria);
+            }
+            if (anyos != null) {
+                ps.setInt(index++, anyos);
+            }
+
+            System.out.println("Ejecutando la consulta..."); // Agregar mensaje para depurar
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Empleado empleado = new Empleado(
+                        rs.getString("dni"),
+                        rs.getString("nombre"),
+                        rs.getString("sexo").charAt(0),
+                        rs.getInt("categoria"),
+                        rs.getInt("anyos")
+                );
+                empleados.add(empleado);
+            }
+
+            System.out.println("Número de empleados encontrados: " + empleados.size()); // Imprimir el número de resultados encontrados
+
+        } catch (SQLException e) {
+            e.printStackTrace(); 
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (ps != null) try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (connection != null) try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+
+        return empleados;
+    }
+
 }
 

@@ -13,7 +13,10 @@
     <td><a href="empleado?opcion=listar"> Mostrar Empleados</a></td>
   </tr>
   <tr>
-        <td><a href="empleado?opcion=buscarSueldo"> Buscar Sueldo por DNI</a></td> <!-- Enlace al nuevo JSP -->
+        <td><a href="empleado?opcion=buscarSueldo"> Buscar Sueldo por DNI</a></td>
+    </tr>
+      <tr>
+        <td><a href="empleado?opcion=filtrarEmpleado">Editar Empleado</a></td> 
     </tr>
 </table>
 </body>

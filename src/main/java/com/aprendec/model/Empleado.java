@@ -88,6 +88,16 @@ public class Empleado extends Persona {
 		anyos = nuevosAnios;
 
 	}
+	@Override
+	public String toString() {
+	    return "Empleado{" +
+	            "dni='" + dni + '\'' +
+	            ", nombre='" + nombre + '\'' +
+	            ", sexo=" + sexo +
+	            ", categoria=" + categoria +
+	            ", anyos=" + anyos +
+	            '}';
+	}
 	
 	
 

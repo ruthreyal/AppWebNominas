@@ -25,7 +25,7 @@ public class EmpleadoServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	String opcion = request.getParameter("opcion");
+        String opcion = request.getParameter("opcion");
 
         if ("listar".equals(opcion)) {
             List<Empleado> listaEmpleados = empleadoDAO.obtenerEmpleados(); // Obtiene la lista de empleados
@@ -34,44 +34,58 @@ public class EmpleadoServlet extends HttpServlet {
         } else if ("buscarSueldo".equals(opcion)) {
             request.setAttribute("empleadoDAO", empleadoDAO); // Pasar el DAO al JSP
             request.getRequestDispatcher("views/buscarSueldo.jsp").forward(request, response); // Redirige al JSP de búsqueda
-        } else if ("sueldo".equals(opcion)) {
-        	RequestDispatcher requestDispatcher= request.getRequestDispatcher("/views/buscarsueldo.jsp");
-        	requestDispatcher.forward(request, response);
-        }
-    }
-    
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-
-            throws ServletException, IOException {
-
-        String opcion = request.getParameter("opcion");
-
-
-
-        if ("buscarSueldo".equals(opcion)) {
-
+        } else if ("filtrar".equals(opcion)) {
+            // Maneja el filtrado
             String dni = request.getParameter("dni");
-
-            EmpleadoDAO empleadoDAO = new EmpleadoDAO();
+            String nombre = request.getParameter("nombre");
+            String sexo = request.getParameter("sexo");
+            String categoria = request.getParameter("categoria");
+            String anyosStr = request.getParameter("anyos");
+            Integer anyos = (anyosStr != null && !anyosStr.isEmpty()) ? Integer.parseInt(anyosStr) : null;
 
             try {
-
-                Double salario = empleadoDAO.obtenerSueldoPorDni(dni);
-
-                request.setAttribute("salario", salario);
-                request.setAttribute("dni", dni);
-
-                RequestDispatcher requestDispatcher = request.getRequestDispatcher("/views/resultadoSueldo.jsp");
-
-                requestDispatcher.forward(request, response);
-
+                List<Empleado> empleadosFiltrados = empleadoDAO.filtrarEmpleados(dni, nombre, sexo, categoria, anyos);
+                System.out.println("Número de empleados encontrados: " + empleadosFiltrados.size());
+                request.setAttribute("filtro", empleadosFiltrados); 
+                request.getRequestDispatcher("views/resultadoFiltrado.jsp").forward(request, response); // Redirige a la vista con resultados filtrados
             } catch (SQLException e) {
-
                 e.printStackTrace();
-
-            }
+            } catch (DatosNoCorrectosException e) {
+			
+				e.printStackTrace();
+			}
+        }else if ("editarEmpleado".equals(opcion)) {
+            request.getRequestDispatcher("/views/editarEmpleado.jsp").forward(request, response);
         }
-    
     }
 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String opcion = request.getParameter("opcion");
+
+        if ("buscarSueldo".equals(opcion)) {
+            String dni = request.getParameter("dni");
+
+            try {
+                Double salario = empleadoDAO.obtenerSueldoPorDni(dni);
+                request.setAttribute("salario", salario);
+                request.setAttribute("dni", dni);
+                RequestDispatcher requestDispatcher = request.getRequestDispatcher("/views/resultadoSueldo.jsp");
+                requestDispatcher.forward(request, response);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else if ("editar".equals(opcion)) {
+            // Manejar la edición del empleado
+            String dni = request.getParameter("dni");
+            try {
+                Empleado empleado = empleadoDAO.obtenerEmpleadoPorDni(dni); // Asegúrate de tener este método en tu DAO
+                request.setAttribute("empleado", empleado);
+                RequestDispatcher requestDispatcher = request.getRequestDispatcher("/views/editarEmpleado.jsp"); // Asegúrate de que el JSP se llame correctamente
+                requestDispatcher.forward(request, response);
+            } catch (DatosNoCorrectosException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+    }
 }
